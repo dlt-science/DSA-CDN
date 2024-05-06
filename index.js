@@ -1223,7 +1223,7 @@ var json_data =
   }
 ]
   };
-var m = [20, 320, 120, 120], // Increased margin on the left
+var m = [20, 320, 120, 140], // Increased margin on the left
 w = 1200 - m[1] - m[3],
 h = 6000 - m[0] - m[2],
 i = 0,
@@ -1340,3 +1340,4 @@ d.children = d._children;
 d._children = null;
 }
 }
+
