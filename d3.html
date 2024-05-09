@@ -66,7 +66,11 @@
     }
 
     .node text {
-      font-size: 12px;
+      font-size: 11px;
+      text-anchor: start; /* Align text to the start (left) */
+      alignment-baseline: middle; /* Align text vertically */
+      pointer-events: none; /* Disable pointer events on text */
+      cursor: pointer; /* Show pointer cursor on hover */
     }
 
     path.link {
@@ -74,138 +78,21 @@
       stroke: #ccc;
       stroke-width: 2.0px;
     }
-    #container {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    
-    svg {
-      display: block;
-      margin: auto;
-    }
-    
 
-    
-    pre {
-      font-size: 18px;
-    }
-    
-    line {
-      stroke: #0E0;
-      stroke-width: 1.5px;
-    }
-    
-    .string, .regexp {
-      color: #f39;
-    }
-    
-    .keyword {
-      color: #00c;
-    }
-    
-    .comment {
-      color: #777;
-      font-style: oblique;
-    }
-    
-    .number {
-      color: #369;
-    }
-    
-    .class, .special {
-      color: #1181B8;
-    }
-    
-    a:link, a:visited {
-      color: steelblue;
-      text-decoration: none;
-    }
-    
-    a:hover {
-      color: #666;
-    }
-    
-    .node circle {
-      cursor: pointer;
-      fill: #fff;
-      stroke: steelblue;
-      stroke-width: 1.5px;
-    }
-    
-    .node text {
-      font-size: 11px;
-      text-anchor: start; /* Align text to the start (left) */
-      alignment-baseline: middle; /* Align text vertically */
-      pointer-events: none; /* Disable pointer events on text */
-      cursor: pointer; /* Show pointer cursor on hover */
-    }
-    
-    .node rect {
+    rect.node-rect {
       fill: #fff; /* Set background color of rectangle */
       stroke: #666; /* Set border color of rectangle */
       stroke-width: 1px; /* Set border width of rectangle */
-    }
-    
-    .node:hover rect {
-      stroke: #000; /* Change border color on hover */
-    }
-    
-    .node title {
-      pointer-events: none; /* Disable pointer events on title */
-    }
-    
-    .node.subchild rect {
-      fill: #666; /* Set background color of rectangle */
-    }
-    
-    .node.grandchild rect {
-      fill: #42BBFF; /* Set background color of rectangle */
-    }
-    
-    .node.parent rect {
-      fill: #000; /* Set background color of rectangle */
-    }
-    
-    .node.newgrandlastchild rect {
-      fill: #02C5A2; /* Set background color of rectangle */
-    }
-    
-    text {
-      fill: #fff; /* Set text color */
-      pointer-events: none; /* Disable pointer events on text */
       cursor: pointer; /* Show pointer cursor on hover */
     }
-    
-    rect {
-      fill: #000000 !important; /* Set default background color of rectangle */
+
+    rect.node-rect:hover {
+      stroke: #000; /* Change border color on hover */
     }
-    
-    .child rect {
-      fill: #428EFF !important; /* Set background color of rectangle for child nodes */
-    }
-    
-    g.node.subchild rect {
-      fill: #666666 !important; /* Set background color of rectangle for subchild nodes */
-    }
-    
-    g.node.grandchild rect {
-      fill: #42BBFF !important; /* Set background color of rectangle for grandchild nodes */
-    }
-    
-    g.node.parent rect {
-      fill: #000 !important; /* Set background color of rectangle for parent nodes */
-    }
-    
-    g.node.newgrandlastchild rect {
-      fill: #02C5A2 !important; /* Set background color of rectangle for new grandlast child nodes */
-    }
-    
-    text {
-      fill: #fff !important; /* Set text color */
-      cursor: pointer !important; /* Show pointer cursor on hover */
+
+    text.node-text {
+      fill: #fff; /* Set text color */
+      cursor: pointer; /* Show pointer cursor on hover */
     }
   </style>
 </head>
@@ -1491,29 +1378,33 @@ var nodeEnter = node.enter().append("svg:g")
         update(d);
     });
 
-nodeEnter.append("rect") // Add rectangle behind each node's name
-    .attr("width", function(d) { return d.name.length * 7; }) // Adjust width based on name length
-    .attr("height", 20) // Set height as per your preference
-    .attr("x", function(d) { return d.children || d._children ? -d.name.length * 7 - 5 : 5; }) // Adjust x position
+var rect = nodeEnter.append("rect") // Add rectangle behind each node's name
+    .attr("class", "node-rect")
     .attr("y", -10) // Adjust y position
     .attr("rx", 5) // Rounded corners, adjust as needed
     .attr("ry", 5) // Rounded corners, adjust as needed
-    .style("fill", "#fff") // Set background color
     .style("stroke", "#666"); // Set border color
+
+rect.each(function(d) {
+    var bbox = this.parentNode.getBBox(); // Get the bounding box of the parent g element
+    d3.select(this)
+        .attr("width", bbox.width + 10) // Adjust the width of the rectangle based on the width of the text
+        .attr("x", -bbox.width / 2 - 5); // Adjust the x position to center the text
+});
 
 nodeEnter.append('a')
     .attr('xlink:href', function(d) {
         return d.url;
     })
     .append("svg:text")
-    .attr("x", function(d) { return d.children || d._children ? -10 : 10; })
+    .attr("class", "node-text")
+    .attr("x", 5) // Adjust x position
     .attr("dy", ".35em")
-    .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
+    .attr("text-anchor", "start")
     .text(function(d) { return d.name; })
     .style('fill', function(d) {
         return d.free ? 'black' : '#999';
-    })
-    .style("fill-opacity", 1e-6);
+    });
 
 nodeEnter.append("svg:title")
     .text(function(d) {
@@ -1524,11 +1415,11 @@ var nodeUpdate = node.transition()
     .duration(duration)
     .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
 
-nodeUpdate.select("rect") // Transition for rectangles
+nodeUpdate.select(".node-rect")
     .attr("width", function(d) { return d.name.length * 7; })
     .attr("x", function(d) { return d.children || d._children ? -d.name.length * 7 - 5 : 5; });
 
-nodeUpdate.select("text")
+nodeUpdate.select(".node-text")
     .style("fill-opacity", 1);
 
 var nodeExit = node.exit().transition()
@@ -1536,10 +1427,10 @@ var nodeExit = node.exit().transition()
     .attr("transform", function(d) { return "translate(" + source.y + "," + source.x + ")"; })
     .remove();
 
-nodeExit.select("rect")
+nodeExit.select(".node-rect")
     .attr("width", 1e-6);
 
-nodeExit.select("text")
+nodeExit.select(".node-text")
     .style("fill-opacity", 1e-6);
 
 var link = vis.selectAll("path.link")
