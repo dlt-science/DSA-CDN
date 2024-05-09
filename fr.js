@@ -1,79 +1,5 @@
-<style>
-  #body {
-  width: 1200px;
-  margin: 0 auto;
-  position: relative;
-}
 
-rect {
-  fill: none;
-  pointer-events: all;
-}
-
-pre {
-  font-size: 18px;
-}
-
-line {
-  stroke: #0E0;
-  stroke-width: 1.5px;
-}
-
-.string, .regexp {
-  color: #f39;
-}
-
-.keyword {
-  color: #00c;
-}
-
-.comment {
-  color: #777;
-  font-style: oblique;
-}
-
-.number {
-  color: #369;
-}
-
-.class, .special {
-  color: #1181B8;
-}
-
-a:link, a:visited {
-  color: steelblue;
-  text-decoration: none;
-}
-
-a:hover {
-  color: #666;
-}
-
-
-
-.node circle {
-  cursor: pointer;
-  fill: #fff;
-  stroke: steelblue;
-  stroke-width: 1.5px;
-}
-
-.node text {
-  font-size: 20px;
-}
-
-path.link {
-  fill: none;
-  stroke: #ccc;
-  stroke-width: 2.0px;
-}
-</style>
-<script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-<div id="body">
-  
-</div>
-<script>
- var json_data =
+var json_data =
 {
   "name": "Blockchain Taxonomy",
   "children": [
@@ -361,20 +287,17 @@ path.link {
   ]
 };
 
-var m = [120, 320, 220, 280],
-    w = 1800 - m[1] - m[3],
-    h = 4000 - m[0] - m[2],
-    i = 10,
+var m = [20, 120, 20, 200],
+    w = 1280 - m[1] - m[3],
+    h = 1800 - m[0] - m[2],
+    i = 0,
     root;
 
 var tree = d3.layout.tree()
     .size([h, w]);
 
-    var diagonal = d3.svg.diagonal()
-    .projection(function(d) { return [d.y, d.x]; })
-    .source(function(d) { return {"x":d.source.x, "y":d.source.y + 10}; }) // Add horizontal offset to source
-    .target(function(d) { return {"x":d.target.x, "y":d.target.y - 10}; }); // Add horizontal offset to target
-
+var diagonal = d3.svg.diagonal()
+    .projection(function(d) { return [d.y, d.x]; });
 
 var vis = d3.select("#body").append("svg:svg")
     .attr("width", w + m[1] + m[3])
@@ -382,40 +305,16 @@ var vis = d3.select("#body").append("svg:svg")
   .append("svg:g")
     .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
 
-    root = json_data;
+root = json_data;
 root.x0 = h / 2;
 root.y0 = 0;
 
-// Toggle children.
-function toggle(d) {
-  if (d.children) {
-    d._children = d.children;
-    d.children = null;
-  } else {
-    d.children = d._children;
-    d._children = null;
-  }
-}
-
-// Toggle all nodes to collapse after the second level of children.
 function toggleAll(d) {
   if (d.children) {
-    if (d.depth >= 2) { // Collapse after the second level of children
-      d.children.forEach(function(child) {
-        if (child.children) {
-          child._children = child.children;
-          child.children = null;
-        }
-      });
-    }
     d.children.forEach(toggleAll);
     toggle(d);
   }
 }
-
-// Initialize the display to show a few nodes.
-root.children.forEach(toggleAll);
-update(root);
 
   // Initialize the display to show a few nodes.
   // root.children.forEach(toggleAll);
@@ -424,6 +323,7 @@ update(root);
   // toggle(root.children[9]);
   // toggle(root.children[9].children[0]);
 
+ update(root);
 
 
 function update(source) {
@@ -449,23 +349,19 @@ function update(source) {
       .attr("r", 1e-6)
       .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
 
-      nodeEnter.append('a')
-    .attr('xlink:href', function(d) {
+  nodeEnter.append('a')
+      .attr('xlink:href', function(d) {
         return d.url;
-    })
-    .append("svg:text")
-    .attr("x", function(d) { return d.children || d._children ? -10 : 10; })
-    .attr("dy", ".35em")
-    .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
-    .text(function(d) { return d.name; })
-    .style('fill', function(d) {
+      })
+      .append("svg:text")
+      .attr("x", function(d) { return d.children || d._children ? -10 : 10; })
+      .attr("dy", ".35em")
+      .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
+      .text(function(d) { return d.name; })
+      .style('fill', function(d) {
         return d.free ? 'black' : '#999';
-    })
-    .style("fill-opacity", 1e-6)
-    .attr("transform", function(d) { 
-        return d.children || d._children ? "translate(-10, 0)" : "translate(10, 0)"; // Adjust text position based on whether it's a parent or child node
-    });
-
+      })
+      .style("fill-opacity", 1e-6);
 
   nodeEnter.append("svg:title")
     .text(function(d) {
@@ -542,4 +438,3 @@ function toggle(d) {
     d._children = null;
   }
 }
-</script>
